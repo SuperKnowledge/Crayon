@@ -31,6 +31,10 @@ struct UIProperties: Codable {
     
     // Button
     var label: UINode? // A button's label is another node
+    
+    // TextField
+    let value: String?
+    let placeholder: String?
 }
 
 // The main node in the tree
@@ -91,7 +95,7 @@ class UINode: Codable, Identifiable, Hashable {
 
 // Enum for all supported component types
 enum ComponentType: String, Codable {
-    case VStack, HStack, Text, Image, Button, Spacer
+    case VStack, HStack, Text, Image, Button, Spacer, TextField
 }
 
 // Defines an action a component can perform

@@ -10,6 +10,7 @@ import SwiftUI
 
 struct DynamicViewRenderer: View {
     let node: UINode
+    @State private var textFieldValues: [String: String] = [:]
 
     var body: some View {
         render(node: node)
@@ -72,6 +73,25 @@ struct DynamicViewRenderer: View {
 
         case .Spacer:
             Spacer()
+            
+        case .TextField:
+             TextField(
+                 node.properties?.placeholder ?? "Enter text",
+                 text: Binding(
+                     get: {
+                         textFieldValues[node.id] ?? node.properties?.value ?? ""
+                     },
+                     set: { newValue in
+                         textFieldValues[node.id] = newValue
+                         // 触发onChange事件
+                         if let action = node.actions?.first(where: { $0.trigger == "onChange" }) {
+                             ActionHandler.shared.handleTextFieldChange(action, newValue: newValue)
+                         }
+                     }
+                 )
+             )
+             .textFieldStyle(RoundedBorderTextFieldStyle())
+             .applyModifiers(from: node.properties)
         }
     }
 }

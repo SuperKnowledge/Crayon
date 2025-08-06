@@ -36,21 +36,93 @@ struct ContentView: View {
         // Your existing JSON loading logic...
         let jsonString = """
         {
-          "id": "root",
-          "type": "VStack", "properties": {"spacing": 20},
+          "id": "vstack",
+          "type": "VStack",
+          "properties": {
+            "spacing": 16
+          },
           "children": [
-            {"id": "title", "type": "Text", "properties": {"text": "Welcome!", "fontSize": 24}},
             {
-              "id": "nav_button", "type": "Button",
-              "properties": {"label": {"id": "btn_label", "type": "Text", "properties": {"text": "Go to Details"}}},
-              "actions": [{"trigger": "onClick", "type": "NAVIGATE", "payload": {"destination": "product_123"}}]
+              "id": "vstack_2",
+              "type": "VStack",
+              "properties": {
+                "spacing": 8
+              },
+              "children": [
+                {
+                  "id": "text",
+                  "type": "Text",
+                  "properties": {
+                    "text": "Maximum Value:"
+                  }
+                },
+                {
+                  "id": "textfield",
+                  "type": "TextField",
+                  "properties": {
+                    "value": "",
+                    "placeholder": "Enter a number"
+                  },
+                  "actions": [
+                    {
+                      "trigger": "onChange",
+                      "type": "ACTION",
+                      "payload": {
+                        "onChange.payload": "{{onChange.payload}}"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "vstack_3",
+              "type": "VStack",
+              "properties": {
+                "spacing": 8
+              },
+              "children": [
+                {
+                  "id": "text_2",
+                  "type": "Text",
+                  "properties": {
+                    "text": "Current Count: 0"
+                  }
+                },
+                {
+                  "id": "button",
+                  "type": "Button",
+                  "properties": {
+                    "label": {
+                      "id": "text_3",
+                      "type": "Text",
+                      "properties": {
+                        "text": "Increment"
+                      }
+                    }
+                  },
+                  "actions": [
+                    {
+                      "trigger": "onClick",
+                      "type": "INCREMENT",
+                      "payload": {
+                        "onClick.payload": "{{onClick.payload}}"
+                      }
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
         """
-        
-        let jsonData = jsonString.data(using: .utf8)!
-        self.rootNode = try? JSONDecoder().decode(UINode.self, from: jsonData)
+            do {
+            
+            let jsonData = jsonString.data(using: .utf8)!
+            self.rootNode = try JSONDecoder().decode(UINode.self, from: jsonData)
+        } catch {
+            Log.error("\(error)")
+        }
     }
 }
 

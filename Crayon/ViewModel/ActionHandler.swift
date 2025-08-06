@@ -81,4 +81,25 @@ final class ActionHandler: ObservableObject {
         
         /// TODO
     }
+    
+    func handleTextFieldChange(_ action: UIAction, newValue: String) {
+        print("TextField changed: \(newValue)")
+        // 这里可以根据需要处理TextField的值变化
+        // 比如验证输入、更新状态等
+    }
+    
+    private func handleIncrement(_ action: UIAction) {
+        print("Increment action triggered")
+        // 实现递增逻辑
+    }
+    
+    private func handleUpdate(_ action: UIAction) {
+        print("Update action triggered")
+        // 实现更新逻辑
+    }
+    
+    private func handleReset(_ action: UIAction) {
+          print("Reset action triggered")
+          // 实现重置逻辑
+      }
 }
