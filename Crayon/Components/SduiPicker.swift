@@ -6,42 +6,30 @@
 //
 import SwiftUI
 
-struct PickerOption: Codable, Identifiable {
-    let id = UUID()
+
+
+struct PickerOption {
     let label: String
     let value: String
 }
 
-struct PickerProps: Codable {
-    var selectedValue: String
-    var options: [PickerOption]
+struct PickerProps {
+    let selectedValue: String
+    let options: [PickerOption]
+    let placeholder: String?
 }
 
 
 struct SduiPicker: View {
-    @State private var selectedValue: String
     let props: PickerProps
-    let action: Action?
-    
-    init(props: PickerProps, action: Action?) {
-        self.props = props
-        self.action = action
-        _selectedValue = State(initialValue: props.selectedValue)
-    }
     
     var body: some View {
-        Picker(selection: $selectedValue, label: Text("Select")) {
-            ForEach(props.options) { option in
+        Picker(props.placeholder ?? "Select", selection: .constant(props.selectedValue)) {
+            ForEach(props.options, id: \.value) { option in
                 Text(option.label).tag(option.value)
             }
         }
         .pickerStyle(MenuPickerStyle())
-        .onChange(of: selectedValue) { newValue in
-            guard var payload = action?.payload else { return }
-                payload["selectedValue"] = AnyCodable(newValue)
-                var newAction = action!
-                newAction.payload = payload
-                ActionInterpreter.shared.handle(newAction)
-        }
     }
 }
+

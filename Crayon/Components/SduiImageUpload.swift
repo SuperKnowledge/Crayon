@@ -8,51 +8,43 @@
 import SwiftUI
 import UIKit
 
-struct ImageUploadProps: Codable {
-    var imageUrl: String?
-    var placeholderImageName: String? // 占位图
+struct ImageUploaderProps {
+    let imageUrl: String?
+    let placeholder: String
+    let maxSize: Int?
+    let allowedTypes: [String]
 }
 
-struct SduiImageUpload: View {
-    @State private var image: UIImage?
-    let props: ImageUploadProps
-    let action: Action?
-    @State private var showingPicker = false
+struct SduiImageUploader: View {
+    let props: ImageUploaderProps
+    @State private var showingImagePicker = false
     
     var body: some View {
-        VStack {
-            if let image = image {
-                Image(uiImage: image).resizable().scaledToFit()
-            } else if let url = props.imageUrl, let uiImage = loadImageFromURL(url) {
-                Image(uiImage: uiImage).resizable().scaledToFit()
-            } else if let placeholder = props.placeholderImageName {
-                Image(placeholder).resizable().scaledToFit()
-            }
-            
-            Button("Upload") {
-                showingPicker = true
-            }
-        }
-        .sheet(isPresented: $showingPicker) {
-            ImagePicker(sourceType: .photoLibrary) { pickedImage in
-                image = pickedImage
-                if let action = action {
-                    // 假设 ActionInterpreter 支持 image 上传处理
-                    ActionInterpreter.shared.handle(action)
+        Button(action: { showingImagePicker = true }) {
+            if let imageUrl = props.imageUrl, !imageUrl.isEmpty {
+                AsyncImage(url: URL(string: imageUrl)) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                } placeholder: {
+                    ProgressView()
                 }
+                .frame(maxWidth: 200, maxHeight: 200)
+            } else {
+                VStack {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 40))
+                    Text(props.placeholder)
+                        .font(.caption)
+                }
+                .foregroundColor(.secondary)
+                .frame(minWidth: 100, minHeight: 100)
+                .border(Color.gray.opacity(0.3), width: 1)
             }
         }
-    }
-    
-
-    func loadImageFromURL(_ urlString: String) -> UIImage? {
-        guard let url = URL(string: urlString) else {
-            return nil
+        .sheet(isPresented: $showingImagePicker) {
+            // Image picker implementation would go here
+            Text("Image Picker Placeholder")
         }
-        if let data = try? Data(contentsOf: url) {
-            return UIImage(data: data)
-        }
-        return nil
     }
-
 }

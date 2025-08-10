@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct SduiImage: View {
     let url: String
     let style: StyleProps
@@ -15,10 +16,13 @@ struct SduiImage: View {
         AsyncImage(url: URL(string: url)) { image in
             image
                 .resizable()
-                .scaledToFit()
-                .cornerRadius(style.cornerRadius ?? 0)
+                .aspectRatio(contentMode: .fit)
         } placeholder: {
             ProgressView()
         }
+        .font(style.fontSize.map { .system(size: CGFloat($0)) } ?? .body)
+               .foregroundColor(style.foregroundColor ?? .primary)
+               .padding(CGFloat(style.padding ?? 0))
+   
     }
 }
