@@ -52,15 +52,22 @@ class SduiStateManager: ObservableObject {
         self.bindings = config.bindings ?? [:]
         self.watchers = config.watchers ?? []
         
+        print("🔄 SduiStateManager: 初始化状态管理器")
+        print("🔄 绑定数量: \(bindings.count)")
+        
         // 初始化状态值
         for (key, binding) in bindings {
             if let computed = binding.computed, computed, binding.expression != nil {
                 // 计算属性稍后会重新计算
                 state[key] = binding.defaultValue?.value
+                print("🔄 初始化计算属性: \(key) = \(String(describing: binding.defaultValue?.value))")
             } else {
                 state[key] = binding.defaultValue?.value
+                print("🔄 初始化状态值: \(key) = \(String(describing: binding.defaultValue?.value))")
             }
         }
+        
+        print("🔄 最终状态: \(state)")
         
         // 计算所有计算属性
         updateComputedProperties()

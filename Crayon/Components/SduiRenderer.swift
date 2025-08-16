@@ -67,7 +67,16 @@ struct SduiRenderer: View {
             
             let style = StyleProps(from: node.props["style"]?.value as? [String: AnyCodable] ?? [:])
             
-            SduiTextField(props: textFieldProps, style: style)
+            // 检查是否有状态绑定
+            let stateKey: String? = {
+                if let textValue = node.props["text"]?.value as? String,
+                   textValue.hasPrefix("@state:") {
+                    return String(textValue.dropFirst(7))
+                }
+                return nil
+            }()
+            
+            SduiTextField(props: textFieldProps, style: style, stateManager: stateManager, stateKey: stateKey)
 
         case "SduiIcon":
             let iconProps = IconProps(
@@ -131,7 +140,9 @@ struct SduiRenderer: View {
            stringValue.hasPrefix("@state:"),
            let stateManager = stateManager {
             let stateKey = String(stringValue.dropFirst(7)) // 移除 "@state:" 前缀
-            return stateManager.getValue(stateKey) ?? value
+            let resolvedValue: T? = stateManager.getValue(stateKey)
+            print("🔍 解析状态值: \(stringValue) -> key: \(stateKey) -> value: \(String(describing: resolvedValue))")
+            return resolvedValue ?? value
         }
         return value
     }
@@ -139,11 +150,15 @@ struct SduiRenderer: View {
 
 extension SduiRenderer {
     static func renderWithState(node: ComponentNode) -> some View {
+        print("🎨 SduiRenderer: 开始渲染节点 \(node.id)")
+        
         if let stateConfig = node.state {
+            print("🎨 发现状态配置，创建状态管理器")
             // 创建带状态的渲染器
             let stateManager = SduiStateManager(configuration: stateConfig)
             return AnyView(SduiRenderer(node: node, stateManager: stateManager))
         } else {
+            print("🎨 没有状态配置，使用普通渲染器")
             // 普通渲染器
             return AnyView(SduiRenderer(node: node))
         }

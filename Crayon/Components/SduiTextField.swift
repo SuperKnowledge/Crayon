@@ -28,13 +28,22 @@ struct TextFieldProps {
 struct SduiTextField: View {
     let props: TextFieldProps
     let style: StyleProps
+    let stateManager: SduiStateManager?
+    let stateKey: String?
+    
+    init(props: TextFieldProps, style: StyleProps, stateManager: SduiStateManager? = nil, stateKey: String? = nil) {
+        self.props = props
+        self.style = style
+        self.stateManager = stateManager
+        self.stateKey = stateKey
+    }
     
     var body: some View {
         Group {
             if props.isSecure {
-                SecureField(props.placeholder, text: .constant(props.text))
+                SecureField(props.placeholder, text: textBinding)
             } else {
-                TextField(props.placeholder, text: .constant(props.text))
+                TextField(props.placeholder, text: textBinding)
             }
         }
         .disabled(props.isDisabled)
@@ -42,6 +51,24 @@ struct SduiTextField: View {
         .font(textFont)
         .foregroundColor(textColor)
         .padding(textPadding)
+    }
+    
+    private var textBinding: Binding<String> {
+        if let stateManager = stateManager, let stateKey = stateKey {
+            return Binding(
+                get: {
+                    let value: String? = stateManager.getValue(stateKey)
+                    print("🔍 TextField 获取状态值: \(stateKey) = \(value ?? "nil")")
+                    return value ?? ""
+                },
+                set: { newValue in
+                    print("🔍 TextField 设置状态值: \(stateKey) = \(newValue)")
+                    stateManager.setValue(stateKey, value: newValue)
+                }
+            )
+        } else {
+            return .constant(props.text)
+        }
     }
     
     private var textFont: Font {
