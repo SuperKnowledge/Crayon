@@ -4,121 +4,58 @@
 //
 //  Created by leetao on 2025/8/3.
 //
-
 import SwiftUI
 
 struct ContentView: View {
-    @State private var rootNode: ComponentNode?
-    
-    @State private var navigationPath = NavigationPath()
+    @State private var selectedTab: TabItem = .home
+    @State private var showInputDialog = false;
 
     var body: some View {
-        NavigationStack(path: $navigationPath) {
-            VStack {
-                if let node = rootNode {
-                    SduiRenderer.renderWithState(node: node)
-                } else {
-                    ProgressView()
-                        .onAppear(perform: loadUI)
+        ZStack(alignment: .bottom) {
+            mainContentView
+            HStack(alignment:.center, spacing: 32){
+                    CustomBottomNavBar(
+                        items: TabItem.allCases,
+                        selectedTab: $selectedTab
+                    )
+            
+                    PrimaryActionBtn {
+                        showInputDialog.toggle()
+                    }
                 }
-            }
-            .navigationTitle("Dynamic UI")
-            .navigationDestination(for: String.self) { screenId in
-                DynamicDetailView(screenId: screenId)
-            }
+                .padding(.horizontal)
+                .padding(.top, 20)
+                .padding(.bottom, 8)
+                .buttonStyle(.plain)
         }
-        .onReceive(ActionHandler.shared.navigationSubject) { destinationId in
-            navigationPath.append(destinationId)
-        }
-    }
-
-    func loadUI() {
-        // Updated JSON structure to match ComponentNode format
-        let jsonString = """
-        {
-            "id": "login_form",
-            "type": "SduiVStack",
-            "props": {
-                "spacing": 16
-            },
-            "children": [
-                {
-                    "id": "login_title",
-                    "type": "SduiText",
-                    "props": {
-                        "text": "用户登录"
-                    }
-                },
-                {
-                    "id": "username_field",
-                    "type": "SduiTextField",
-                    "props": {
-                        "placeholder": "请输入用户名",
-                        "text": "@state:username"
-                    }
-                },
-                {
-                    "id": "password_field",
-                    "type": "SduiTextField",
-                    "props": {
-                        "placeholder": "请输入密码",
-                        "isSecure": true,
-                        "text": "@state:password"
-                    }
-                },
-                {
-                    "id": "login_button",
-                    "type": "SduiButton",
-                    "props": {
-                        "title": "登录"
-                    },
-                    "action": {
-                        "trigger": "onClick",
-                        "type": "login",
-                        "payload": {
-                            "username": "@state:username",
-                            "password": "@state:password"
-                        }
-                    }
-                }
-            ],
-            "state": {
-                "bindings": {
-                    "username": {
-                        "key": "username",
-                        "type": "string",
-                        "defaultValue": "",
-                        "computed": false
-                    },
-                    "password": {
-                        "key": "password",
-                        "type": "string",
-                        "defaultValue": "",
-                        "computed": false
-                    }
-                }
-            }
-        }        
-"""
-        do {
-            let jsonData = jsonString.data(using: .utf8)!
-            self.rootNode = try JSONDecoder().decode(ComponentNode.self, from: jsonData)
-        } catch {
-            Log.error("\(error)")
+        .onChange(of: selectedTab) { newTab in
+            print("Tab changed to: \(newTab)")
+        }.sheet(isPresented:$showInputDialog) {
+            UserInputTextField()
         }
     }
-}
-
-// A simple detail view to navigate to
-struct DynamicDetailView: View {
-    let screenId: String
     
-    var body: some View {
-        Text("You have navigated to screen: \(screenId)")
-            .font(.largeTitle)
-            .navigationTitle(screenId)
+    @ViewBuilder
+    private var mainContentView: some View {
+        ZStack {
+            Color.secondary.ignoresSafeArea()
+            switch selectedTab {
+            case .home:
+                Home()
+                    .navigationTitle("Home")
+            case .apps:
+                 Apps()
+                    .navigationTitle("App")
+            case .profile:
+                Profile()
+                    .navigationTitle("Profile")
+            }
+        }
+        .foregroundColor(.white)
     }
+    
 }
+
 
 #Preview {
     ContentView()
