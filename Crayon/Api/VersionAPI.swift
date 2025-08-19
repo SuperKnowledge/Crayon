@@ -78,7 +78,7 @@ struct VersionApi:ApiProtocol{
     // 比较两个版本
     static func compareVersions(appId: String, v1: Int, v2: Int, completion: @escaping (Result<[String: Any], Error>) -> Void) {
         var url = baseURL.appending("/\(appId)/compare-versions")
-        guard let url = URL(string: url) else { return }
+        guard var url = URL(string: url) else { return }
         var components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
         components.queryItems = [
             URLQueryItem(name: "v1", value: "\(v1)"),
