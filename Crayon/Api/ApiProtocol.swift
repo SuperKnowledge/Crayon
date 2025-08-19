@@ -15,7 +15,7 @@ protocol ApiProtocol {
 
 extension ApiProtocol {
     static var baseURL: String {
-        return "https://api.myapp.com/v1"
+        return "http://localhost:8000/api"
     }
     
     static var token:String {

@@ -14,7 +14,7 @@ struct UserApi:ApiProtocol {
 
     // 创建用户
     static func createUser(email: String, completion: @escaping (Result<[String: Any], Error>) -> Void) {
-        let url = baseURL
+        let url = baseURL.appending("/users")
         guard let url = URL(string: url) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

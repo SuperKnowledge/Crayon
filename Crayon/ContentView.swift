@@ -9,6 +9,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var selectedTab: TabItem = .home
     @State private var showInputDialog = false;
+    @State private var userInput:String = "";
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -31,14 +32,16 @@ struct ContentView: View {
         .onChange(of: selectedTab) { newTab in
             print("Tab changed to: \(newTab)")
         }.sheet(isPresented:$showInputDialog) {
-            UserInputTextField()
+            UserInputTextField(text: $userInput) { description in
+                
+            }
         }
     }
     
     @ViewBuilder
     private var mainContentView: some View {
         ZStack {
-            Color.secondary.ignoresSafeArea()
+            Color(UIColor.systemBackground).ignoresSafeArea()
             switch selectedTab {
             case .home:
                 Home()
@@ -51,7 +54,6 @@ struct ContentView: View {
                     .navigationTitle("Profile")
             }
         }
-        .foregroundColor(.white)
     }
     
 }
