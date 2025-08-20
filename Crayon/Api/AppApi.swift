@@ -85,4 +85,40 @@ class AppApi: ApiProtocol {
             completion(data, error)
         }.resume()
     }
+    
+    // MARK: - 获取我使用的 App 列表
+    static func getAppsIUse(bookmarkedOnly: Bool, token: String, completion: @escaping (Data?, Error?) -> Void) {
+        guard let url = URL(string: "\(baseURL)/using?bookmarked_only=\(bookmarkedOnly)") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            completion(data, error)
+        }.resume()
+    }
+    
+    // MARK: - 切换书签状态
+    static func toggleBookmark(publicationId: String, isBookmarked: Bool, token: String, completion: @escaping (Error?) -> Void) {
+        guard let url = URL(string: "\(baseURL)/using/\(publicationId)/bookmark") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        let body: [String: Any] = ["is_bookmarked": isBookmarked]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        URLSession.shared.dataTask(with: request) { _, _, error in
+            completion(error)
+        }.resume()
+    }
+    
+    // MARK: - 从"我使用的 App"中移除
+    static func removeFromUsedApps(publicationId: String, token: String, completion: @escaping (Error?) -> Void) {
+        guard let url = URL(string: "\(baseURL)/using/\(publicationId)") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        URLSession.shared.dataTask(with: request) { _, _, error in
+            completion(error)
+        }.resume()
+    }
 }

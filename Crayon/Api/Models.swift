@@ -48,6 +48,8 @@ struct ChatResponse: Codable {
     var requestedComponents: [String]
     /// Error message if any
     var error: String?
+    /// appId if aviable
+    var appId: String?
 }
 
 // 需要自定义 AnyCodable 类型以支持任意类型的字典
@@ -63,3 +65,60 @@ struct ConversationHistory: Codable {
     /// Current version number
     var currentVersion: Int
 }
+
+
+// MARK: - App Usage Response
+struct AppUsageResponse: Codable {
+    /// Publication ID
+    let publicationId: UUID
+    /// Share token for URL
+    let shareToken: String
+    /// App title
+    let title: String
+    /// App description
+    let description: String?
+    /// App creator's email
+    let authorEmail: String
+    /// When first accessed
+    let firstUsedAt: Date
+    /// When last accessed
+    let lastUsedAt: Date
+    /// Number of times used
+    let useCount: Int
+    /// Whether bookmarked
+    let isBookmarked: Bool
+    /// Whether can be forked
+    let isForkable: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case publicationId = "publication_id"
+        case shareToken = "share_token"
+        case title
+        case description
+        case authorEmail = "author_email"
+        case firstUsedAt = "first_used_at"
+        case lastUsedAt = "last_used_at"
+        case useCount = "use_count"
+        case isBookmarked = "is_bookmarked"
+        case isForkable = "is_forkable"
+    }
+}
+
+// MARK: - App Usage List Response
+struct AppUsageListResponse: Codable {
+    /// List of used apps
+    let apps: [AppUsageResponse]
+    /// Total count
+    let total: Int
+}
+
+// MARK: - Bookmark Request
+struct BookmarkRequest: Codable {
+    /// Bookmark state
+    let isBookmarked: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case isBookmarked = "is_bookmarked"
+    }
+}
+

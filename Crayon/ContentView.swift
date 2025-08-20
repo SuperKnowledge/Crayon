@@ -9,8 +9,6 @@ import SwiftUI
 struct ContentView: View {
     @State private var selectedTab: TabItem = .home
     @State private var showInputDialog = false;
-    @State private var userInput:String = "";
-
     var body: some View {
         ZStack(alignment: .bottom) {
             mainContentView
@@ -32,9 +30,7 @@ struct ContentView: View {
         .onChange(of: selectedTab) { newTab in
             print("Tab changed to: \(newTab)")
         }.sheet(isPresented:$showInputDialog) {
-            UserInputTextField(text: $userInput) { description in
-                
-            }
+            UserInputTextField()
         }
     }
     
