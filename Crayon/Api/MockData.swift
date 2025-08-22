@@ -63,4 +63,138 @@ struct MockData {
     ]
     
     static let bookmarkedApps: [AppUsageResponse] = sampleApps.filter { $0.isBookmarked }
+    
+    // MARK: - Chat Response Mock Data
+    static let mockChatResponseWithNodeTree = ChatResponse(
+        message: "I've created a beautiful card component for you!",
+        hasCodeChange: true,
+        nodeStateTree: [
+            "id": AnyCodable("card_component"),
+            "type": AnyCodable("SduiVStack"),
+            "props": AnyCodable([
+                "spacing": 16,
+                "padding": 20
+            ]),
+            "children": AnyCodable([
+                [
+                    "id": AnyCodable("card_title"),
+                    "type": AnyCodable("SduiText"),
+                    "props": AnyCodable([
+                        "text": "Sample Card",
+                        "style": [
+                            "fontSize": 24,
+                            "fontWeight": "bold",
+                            "color": "#333333"
+                        ]
+                    ])
+                ],
+                [
+                    "id": AnyCodable("card_content"),
+                    "type": AnyCodable("SduiText"),
+                    "props": AnyCodable([
+                        "text": "This is a sample card content with some description text.",
+                        "style": [
+                            "fontSize": 16,
+                            "color": "#666666"
+                        ]
+                    ])
+                ]
+            ])
+        ],
+        typescriptCode: nil,
+        versionNumber: 1,
+        requestedComponents: [],
+        error: nil
+    )
+    
+    static let mockChatResponseWithError = ChatResponse(
+        message: "Sorry, I couldn't process your request.",
+        hasCodeChange: false,
+        nodeStateTree: nil,
+        typescriptCode: nil,
+        versionNumber: 1,
+        requestedComponents: [],
+        error: "Invalid component syntax"
+    )
+    
+    // MARK: - Validation Mock Data
+    static let mockValidationSuccess: [String: Bool] = [
+        "typecheck": true,
+        "serialize": true
+    ]
+    
+    static let mockValidationTypecheckFail: [String: Bool] = [
+        "typecheck": false,
+        "serialize": false
+    ]
+    
+    static let mockValidationSerializeFail: [String: Bool] = [
+        "typecheck": true,
+        "serialize": false
+    ]
+    
+    static let mockChatResponseForLogin = ChatResponse(
+        message: "Login component created!",
+        hasCodeChange: true,
+        nodeStateTree: [
+            "type": AnyCodable("SduiVStack"),
+            "props": AnyCodable([:]),
+            "children": AnyCodable([
+                [
+                    "type": AnyCodable("SduiText"),
+                    "props": AnyCodable([
+                        "text": "用户登录"
+                    ])
+                ],
+                [
+                    "type": AnyCodable("SduiTextField"),
+                    "props": AnyCodable([
+                        "placeholder": "请输入用户名",
+                        "data-state-key": "username",
+                        "data-state-bindings": "[{\"stateKey\": \"username\", \"propName\": \"text\", \"bidirectional\": true}]"
+                    ]),
+                    "stateBindings": AnyCodable([
+                        [
+                            "stateKey": "username",
+                            "propName": "text",
+                            "bidirectional": true
+                        ]
+                    ])
+                ],
+                [
+                    "type": AnyCodable("SduiTextField"),
+                    "props": AnyCodable([
+                        "placeholder": "请输入密码",
+                        "isSecure": true,
+                        "data-state-key": "password",
+                        "data-state-bindings": "[{\"stateKey\": \"password\", \"propName\": \"text\", \"bidirectional\": true}]"
+                    ]),
+                    "stateBindings": AnyCodable([
+                        [
+                            "stateKey": "password",
+                            "propName": "text",
+                            "bidirectional": true
+                        ]
+                    ])
+                ],
+                [
+                    "type": AnyCodable("SduiButton"),
+                    "props": AnyCodable([
+                        "title": "登录"
+                    ]),
+                    "action": AnyCodable([
+                        "type": "login",
+                        "data": [
+                            "username": "{{username}}",
+                            "password": "{{password}}"
+                        ]
+                    ])
+                ]
+            ])
+        ],
+        typescriptCode: nil,
+        versionNumber: 1,
+        requestedComponents: [],
+        error: nil
+    )
 }

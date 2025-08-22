@@ -10,8 +10,17 @@ import Foundation
 // MARK: - Chat API 客户端
 class ChatAPI:ApiProtocol {
 
+    // MARK: - Mock Mode Control
+    static var useMockData = true // 设置为 true 来使用 mock 数据进行测试
+
     // 发送消息
     static func sendMessage(appId: String, message: String, screenshotUrl: String?, model: String?, completion: @escaping (Result<ChatResponse, Error>) -> Void) {
+        
+        if useMockData {
+            mockSendMessage(message: message, completion: completion)
+            return
+        }
+        
         var urlString = "\(baseURL)/apps/\(appId)/chat"
         if let model = model {
             urlString += "?model=\(model)"
@@ -43,6 +52,12 @@ class ChatAPI:ApiProtocol {
     
     /// 发送消息 without appId
     static func sendMessage(message: String, screenshotUrl: String?, model: String?, completion: @escaping (Result<ChatResponse, Error>) -> Void) {
+        
+        if useMockData {
+            mockSendMessage(message: message, completion: completion)
+            return
+        }
+        
         var urlString = "\(baseURL)/apps/chat/"
         if let model = model {
             urlString += "?model=\(model)"
@@ -70,6 +85,18 @@ class ChatAPI:ApiProtocol {
                 completion(.failure(error))
             }
         }.resume()
+    }
+    
+    // MARK: - Mock Implementation
+    private static func mockSendMessage(message: String, completion: @escaping (Result<ChatResponse, Error>) -> Void) {
+        // 模拟网络延迟
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            if message.contains("error") {
+                completion(.success(MockData.mockChatResponseWithError))
+            } else {
+                completion(.success(MockData.mockChatResponseWithNodeTree))
+            }
+        }
     }
 
     // 获取历史记录

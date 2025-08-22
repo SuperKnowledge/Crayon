@@ -34,6 +34,9 @@ enum ApiError: Error, LocalizedError {
 
 struct ValidApi {
     
+    // MARK: - Mock Mode Control
+    static var useMockData = true // 设置为 true 来使用 mock 数据进行测试
+    
     /// 发送组件代码到服务器进行验证，并确定响应的类型。
     ///
     /// - Parameter componentCode: 要验证的组件代码字符串，例如 "<U>xxx</U>"
@@ -42,7 +45,33 @@ struct ValidApi {
     ///   - 如果是 Serialize 结果，`serialize` 的值表示序列化是否成功 (`json` 字段非 `nil`)，`typecheck` 为 `false`。
     /// - Throws: `ApiError` 如果请求或解析过程中出现问题。
     static func validateComponent(code: String) async throws -> [String: Bool] {
-     
+        
+        // Mock 模式
+        if useMockData {
+            return try await mockValidateComponent(code: code)
+        }
+        
+        // 真实 API 调用
+        return try await realValidateComponent(code: code)
+    }
+    
+    // MARK: - Mock Implementation
+    private static func mockValidateComponent(code: String) async throws -> [String: Bool] {
+        // 模拟网络延迟
+        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+        
+        // 根据代码内容返回不同的 mock 结果
+        if code.contains("error") || code.contains("invalid") {
+            return MockData.mockValidationTypecheckFail
+        } else if code.contains("serialize_fail") {
+            return MockData.mockValidationSerializeFail
+        } else {
+            return MockData.mockValidationSuccess
+        }
+    }
+    
+    // MARK: - Real API Implementation
+    private static func realValidateComponent(code: String) async throws -> [String: Bool] {
         guard let url = URL(string: "http://localhost:3000/api/valid") else {
             throw ApiError.invalidURL
         }
@@ -61,12 +90,10 @@ struct ValidApi {
             throw ApiError.requestFailed(error)
         }
         
-      
         guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
             throw ApiError.invalidResponse
         }
         
-    
         let decodedResponse: ApiResponse
         do {
             decodedResponse = try JSONDecoder().decode(ApiResponse.self, from: data)
@@ -76,7 +103,6 @@ struct ValidApi {
         
         let payload = decodedResponse.any
         
-
         if let isValid = payload.isValid {
             return [
                 "typecheck": isValid,
@@ -84,7 +110,6 @@ struct ValidApi {
             ]
         }
         
-      
         if payload.json != nil || payload.stateManager != nil {
             let serializationSuccess = payload.json != nil
             return [
@@ -96,5 +121,4 @@ struct ValidApi {
         // 如果两种情况都不是，说明响应格式不符合预期
         throw ApiError.unexpectedPayload
     }
-    
 }

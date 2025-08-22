@@ -8,6 +8,21 @@
 
 import SwiftUI
 
+// Wrapper class to make ValidationStepsView observable
+class ValidationStepsViewWrapper: ObservableObject {
+    var validationStepsView: ValidationStepsView?
+    
+    func createView(onCompleted: @escaping () -> Void) -> ValidationStepsView {
+        let view = ValidationStepsView(onAllStepsCompleted: onCompleted)
+        self.validationStepsView = view
+        return view
+    }
+    
+    func startValidation(with code: String) {
+        validationStepsView?.startValidation(with: code)
+    }
+}
+
 struct UserInputTextField: View {
     @State private var text: String = ""
     @State private var isLoading: Bool = false
@@ -15,19 +30,8 @@ struct UserInputTextField: View {
     @State private var responseMessage: String = ""
     @State private var isError: Bool = false
     @State private var showValidationSteps: Bool = false
-    @State private var chatResponse: ChatResponse?
-    @State private var validationSteps: [ValidationStep] = [
-        ValidationStep(
-            title: "Type Check",
-            description: "Validating component structure and syntax",
-            status: .pending
-        ),
-        ValidationStep(
-            title: "Serialization",
-            description: "Verifying component can be serialized properly",
-            status: .pending
-        )
-    ]
+    @State private var currentChatResponse: ChatResponse?
+    @StateObject private var validationStepsView = ValidationStepsViewWrapper()
     
     @Binding var isMinimized: Bool
     let onSuccessResponse: (ChatResponse) -> Void
@@ -43,7 +47,11 @@ struct UserInputTextField: View {
         VStack(spacing: 16) {
             if showValidationSteps && !isMinimized {
                 // 验证步骤视图
-                validationStepsView
+                validationStepsView.createView {
+                    // 当所有验证步骤完成后的回调
+                    handleValidationCompleted()
+                }
+                .transition(.move(edge: .top).combined(with: .opacity))
             }
             
             if hasResponse && !isMinimized && !showValidationSteps {
@@ -59,27 +67,6 @@ struct UserInputTextField: View {
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .animation(.easeInOut(duration: 0.3), value: isMinimized)
         .animation(.easeInOut(duration: 0.3), value: showValidationSteps)
-    }
-    
-    // 验证步骤视图
-    private var validationStepsView: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Validation Steps")
-                .font(.headline)
-                .foregroundColor(.primary)
-            
-            ForEach(Array(validationSteps.enumerated()), id: \.offset) { index, step in
-                ValidationStepRow(
-                    step: step,
-                    stepNumber: index + 1
-                )
-            }
-        }
-        .padding(16)
-        .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
-        .shadow(radius: 2)
-        .transition(.move(edge: .top).combined(with: .opacity))
     }
     
     // 响应结果视图
@@ -190,7 +177,7 @@ struct UserInputTextField: View {
             hasResponse = false
             isError = false
             showValidationSteps = false
-            chatResponse = nil
+            currentChatResponse = nil
         }
         
         ChatAPI.sendMessage(message: messageToSend, screenshotUrl: nil, model: nil) { result in
@@ -207,7 +194,7 @@ struct UserInputTextField: View {
                             hasResponse = true
                         } else {
                             // 成功获得响应，开始验证流程
-                            chatResponse = response
+                            currentChatResponse = response
                             startValidationProcess(response: response)
                         }
                         
@@ -231,11 +218,6 @@ struct UserInputTextField: View {
             return
         }
         
-        // 重置验证步骤状态
-        for i in 0..<validationSteps.count {
-            validationSteps[i].status = .pending
-        }
-        
         // 显示验证步骤
         showValidationSteps = true
         
@@ -250,53 +232,13 @@ struct UserInputTextField: View {
     
     // 开始验证
     private func startValidation(with componentCode: String) {
-        // 开始第一步：Type Check
-        validationSteps[0].status = .loading
-        
-        Task {
-            do {
-                let result = try await ValidApi.validateComponent(code: componentCode)
-                
-                await MainActor.run {
-                    // 更新 Type Check 结果
-                    validationSteps[0].status = result["typecheck"] == true ? .success : .failed
-                    
-                    // 开始第二步：Serialization
-                    validationSteps[1].status = .loading
-                    
-                    // 延迟一点来显示加载状态
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        validationSteps[1].status = result["serialize"] == true ? .success : .failed
-                        
-                        // 检查是否所有步骤都成功
-                        if validationSteps.allSatisfy({ $0.status == .success }) {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                handleValidationCompleted()
-                            }
-                        } else {
-                            // 如果验证失败，显示错误信息
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                handleValidationFailed()
-                            }
-                        }
-                    }
-                }
-            } catch {
-                await MainActor.run {
-                    // 如果验证失败，标记当前正在进行的步骤为失败
-                    for i in 0..<validationSteps.count {
-                        if validationSteps[i].status == .loading {
-                            validationSteps[i].status = .failed
-                            break
-                        }
-                    }
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        handleValidationFailed()
-                    }
-                }
-            }
+        // 显示验证步骤
+        withAnimation(.easeInOut(duration: 0.3)) {
+            showValidationSteps = true
         }
+        
+        // 开始验证过程
+        validationStepsView.startValidation(with: componentCode)
     }
     
     // 验证完成后的处理
@@ -307,7 +249,7 @@ struct UserInputTextField: View {
         
         // 延迟一点后调用成功回调
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            if let response = chatResponse {
+            if let response = currentChatResponse {
                 onSuccessResponse(response)
             }
         }
@@ -344,7 +286,7 @@ struct UserInputTextField: View {
             isError = false
             responseMessage = ""
             showValidationSteps = false
-            chatResponse = nil
+            currentChatResponse = nil
             isTextFieldFocused = true
         }
     }

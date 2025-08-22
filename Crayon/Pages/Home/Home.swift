@@ -11,6 +11,7 @@ struct Home: View {
     @StateObject private var appsViewModel = AppsViewModel()
     @EnvironmentObject var authManager: AuthenticationManager
     @State private var showingAlert = false
+    @State private var showValidationTest = false
     
     var body: some View {
         NavigationView {
@@ -39,6 +40,9 @@ struct Home: View {
             .onChange(of: appsViewModel.errorMessage) { _, newError in
                 showingAlert = newError != nil
             }
+            .sheet(isPresented: $showValidationTest) {
+                ValidationTestView()
+            }
         }
     }
     
@@ -60,14 +64,25 @@ struct Home: View {
                 
                 Spacer()
                 
-                Button(action: {
-                    loadApps()
-                }) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.title2)
-                        .foregroundColor(.accentColor)
+                HStack(spacing: 12) {
+                    // Debug/Test button
+                    Button(action: {
+                        showValidationTest = true
+                    }) {
+                        Image(systemName: "testtube.2")
+                            .font(.title2)
+                            .foregroundColor(.orange)
+                    }
+                    
+                    Button(action: {
+                        loadApps()
+                    }) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.title2)
+                            .foregroundColor(.accentColor)
+                    }
+                    .disabled(appsViewModel.isLoading)
                 }
-                .disabled(appsViewModel.isLoading)
             }
             
             // Filter Toggle
