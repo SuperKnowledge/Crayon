@@ -4,7 +4,6 @@
 //
 //  Created by leetao on 2025/8/3.
 //
-
 import XCTest
 
 final class CrayonUITestsLaunchTests: XCTestCase {

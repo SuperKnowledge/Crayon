@@ -12,6 +12,14 @@ import SwiftUI
 // MARK: - App Card View Component
 struct AppCardView: View {
     let appUsage: AppUsageResponse
+    let onBookmarkToggle: (() -> Void)?
+    let onRemove: (() -> Void)?
+    
+    init(appUsage: AppUsageResponse, onBookmarkToggle: (() -> Void)? = nil, onRemove: (() -> Void)? = nil) {
+        self.appUsage = appUsage
+        self.onBookmarkToggle = onBookmarkToggle
+        self.onRemove = onRemove
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -44,11 +52,26 @@ struct AppCardView: View {
                 
                 // Status Icons (Bookmark & Fork)
                 HStack(spacing: 12) {
-                    Image(systemName: appUsage.isBookmarked ? "bookmark.fill" : "bookmark")
-                        .foregroundColor(appUsage.isBookmarked ? .yellow : .secondary)
+                    Button(action: {
+                        onBookmarkToggle?()
+                    }) {
+                        Image(systemName: appUsage.isBookmarked ? "bookmark.fill" : "bookmark")
+                            .foregroundColor(appUsage.isBookmarked ? .yellow : .secondary)
+                    }
+                    .buttonStyle(PlainButtonStyle())
                     
                     Image(systemName: "arrow.triangle.branch")
                         .foregroundColor(appUsage.isForkable ? .green : .secondary.opacity(0.5))
+                    
+                    Menu {
+                        Button("Remove from Recent", role: .destructive) {
+                            onRemove?()
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
                 .font(.callout)
             }

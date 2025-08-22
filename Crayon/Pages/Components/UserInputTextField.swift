@@ -15,11 +15,19 @@ struct UserInputTextField: View {
     @State private var responseMessage: String = ""
     @State private var isError: Bool = false
     
+    @Binding var isMinimized: Bool
+    let onSuccessResponse: (ChatResponse) -> Void
+    
     @FocusState private var isTextFieldFocused: Bool
+    
+    init(isMinimized: Binding<Bool> = .constant(false), onSuccessResponse: @escaping (ChatResponse) -> Void = { _ in }) {
+        self._isMinimized = isMinimized
+        self.onSuccessResponse = onSuccessResponse
+    }
 
     var body: some View {
         VStack(spacing: 16) {
-            if hasResponse {
+            if hasResponse && !isMinimized {
                 // 响应结果视图
                 responseView
             }
@@ -30,6 +38,7 @@ struct UserInputTextField: View {
         .padding(.horizontal)
         .padding(.vertical, 8)
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .animation(.easeInOut(duration: 0.3), value: isMinimized)
     }
     
     // 响应结果视图
@@ -55,7 +64,7 @@ struct UserInputTextField: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
             }
-            .frame(minHeight: 100, maxHeight: 200)
+            .frame(minHeight: 100, maxHeight: isMinimized ? 50 : 200)
             .background(Color(UIColor.secondarySystemBackground))
             .cornerRadius(12)
         }
@@ -69,7 +78,7 @@ struct UserInputTextField: View {
     // 输入区域视图
     private var inputAreaView: some View {
         ZStack(alignment: .bottomTrailing) {
-            if hasResponse {
+            if hasResponse || isMinimized {
                 // 压缩状态的输入框
                 Spacer()
                 compactInputView
@@ -108,9 +117,9 @@ struct UserInputTextField: View {
             .foregroundColor(.primary)
             .cornerRadius(20)
             .focused($isTextFieldFocused)
-            .frame(minHeight: hasResponse ? 50 : 120)
+            .frame(minHeight: 120)
             .onAppear {
-                if !hasResponse {
+                if !hasResponse && !isMinimized {
                     isTextFieldFocused = true
                 }
             }
@@ -141,7 +150,6 @@ struct UserInputTextField: View {
             isError = false
         }
         
-        
         ChatAPI.sendMessage(message: messageToSend, screenshotUrl: nil, model: nil) { result in
             DispatchQueue.main.async {
                 withAnimation(.easeInOut(duration: 0.5)) {
@@ -157,6 +165,9 @@ struct UserInputTextField: View {
                         if let error = response.error {
                             isError = true
                             responseMessage = error
+                        } else {
+                            // 成功时调用回调，传递完整的 ChatResponse
+                            onSuccessResponse(response)
                         }
                         
                     case .failure(let error):
@@ -181,14 +192,14 @@ struct UserInputTextField: View {
 }
 
 struct UserInputTextField_PreviewContainer: View {
-    @State private var messageText = ""
+    @State private var isMinimized = false
 
     var body: some View {
-     
-            UserInputTextField()
+        UserInputTextField(isMinimized: $isMinimized) { response in
+            print("Response: \(response)")
+        }
     }
 }
-
 
 #Preview {
     UserInputTextField_PreviewContainer()

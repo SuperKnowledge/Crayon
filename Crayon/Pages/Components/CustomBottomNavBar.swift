@@ -33,16 +33,20 @@ struct CustomBottomNavBar: View {
     let items: [TabItem]
     @Binding var selectedTab: TabItem
     
+    @Environment(\.colorScheme) var colorScheme
+
     var body: some View {
         HStack(spacing: 28) {
             ForEach(items) { item in
                 Button(action: {
-                    // 点击按钮时，更新绑定的状态
                     selectedTab = item
                 }) {
                     Image(systemName: item.iconName)
-                        // 根据是否被选中来改变样式
-                        .foregroundColor(selectedTab == item ? .teal : .teal.opacity(0.5))
+                        .foregroundColor(
+                            colorScheme == .light
+                                ? (selectedTab == item ? .black : Color.black.opacity(0.5))
+                                : (selectedTab == item ? .white : Color.white.opacity(0.5))
+                        )
                         .scaleEffect(selectedTab == item ? 1.15 : 1.0)
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selectedTab)
                 }
@@ -51,7 +55,7 @@ struct CustomBottomNavBar: View {
         .font(.title2)
         .padding(.horizontal, 25)
         .padding(.vertical, 15)
-        .background(Color.accentColor.opacity(0.2))
+        .background(colorScheme == .light ? Color.white : Color.black)
         .clipShape(Capsule())
     }
 }

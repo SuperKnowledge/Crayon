@@ -9,13 +9,11 @@
 import Foundation
 
 struct UserApi:ApiProtocol {
-    let baseURL: URL
-    let token: String // Bearer Token
-
+    
     // 创建用户
     static func createUser(email: String, completion: @escaping (Result<[String: Any], Error>) -> Void) {
-        let url = baseURL.appending("/users")
-        guard let url = URL(string: url) else { return }
+        let urlString = "http://localhost:8000/api/users"
+        guard let url = URL(string: urlString) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -33,8 +31,8 @@ struct UserApi:ApiProtocol {
 
     // 获取当前用户信息
     static func getCurrentUser(completion: @escaping (Result<[String: Any], Error>) -> Void) {
-        let url = baseURL.appending("/me")
-        guard let url = URL(string: url) else { return }
+        let urlString = "http://localhost:8000/api/users/me"
+        guard let url = URL(string: urlString) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -50,8 +48,8 @@ struct UserApi:ApiProtocol {
 
     // 通过 ID 获取用户
     static func getUser(userId: String, completion: @escaping (Result<[String: Any], Error>) -> Void) {
-        let url = baseURL.appending("/\(userId)")
-        guard let url = URL(string: url) else { return }
+        let urlString = "http://localhost:8000/api/users/\(userId)"
+        guard let url = URL(string: urlString) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
 
@@ -66,8 +64,8 @@ struct UserApi:ApiProtocol {
 
     // 获取当前用户的所有 app
     static func listMyApps(completion: @escaping (Result<[[String: Any]], Error>) -> Void) {
-        let url = baseURL.appending("/me/apps")
-        guard let url = URL(string: url) else { return }
+        let urlString = "http://localhost:8000/api/users/me/apps"
+        guard let url = URL(string: urlString) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -83,8 +81,8 @@ struct UserApi:ApiProtocol {
 
     // 删除当前用户
     static func deleteCurrentUser(completion: @escaping (Result<Void, Error>) -> Void) {
-        let url = baseURL.appending("/me")
-        guard let url = URL(string: url) else { return }
+        let urlString = "http://localhost:8000/api/users/me"
+        guard let url = URL(string: urlString) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")

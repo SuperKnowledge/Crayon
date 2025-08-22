@@ -7,18 +7,24 @@
 
 import Foundation
 
+
 struct ChatMessage: Codable {
     /// User's message
     var message: String
     /// URL of uploaded screenshot (from /api/files/upload/screenshot)
     var screenshotUrl: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case message
+        case screenshotUrl = "screenshot_url"
+    }
 }
 
 struct MessageResponse: Codable {
     /// Message ID
     var id: UUID
     /// Message role: "user", "assistant", or "system"
-    var role: String
+    var role: String // 在 Swift 中，可以创建一个 enum 来替代 String，以获得更强的类型安全
     /// Message content
     var content: String
     /// Whether code was changed
@@ -29,8 +35,22 @@ struct MessageResponse: Codable {
     var versionNumber: Int
     /// Version/branch this message belongs to
     var versionId: UUID?
+    /// App ID this message belongs to
+    var appId: UUID
     /// Message timestamp
     var createdAt: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case role
+        case content
+        case hasCodeChange = "has_code_change"
+        case screenshotUrl = "screenshot_url"
+        case versionNumber = "version_number"
+        case versionId = "version_id"
+        case appId = "app_id"
+        case createdAt = "created_at"
+    }
 }
 
 struct ChatResponse: Codable {
@@ -48,22 +68,34 @@ struct ChatResponse: Codable {
     var requestedComponents: [String]
     /// Error message if any
     var error: String?
-    /// appId if aviable
-    var appId: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case message
+        case hasCodeChange = "has_code_change"
+        case nodeStateTree = "node_state_tree"
+        case typescriptCode = "typescript_code"
+        case versionNumber = "version_number"
+        case requestedComponents = "requested_components"
+        case error
+    }
 }
-
-// 需要自定义 AnyCodable 类型以支持任意类型的字典
-// 可使用第三方库 AnyCodable，或自定义实现
 
 struct ConversationHistory: Codable {
     /// List of messages
     var messages: [MessageResponse]
     /// Total message count
     var totalMessages: Int
-    /// App ID
-    var appId: UUID
+    /// App ID (nil for all apps)
+    var appId: UUID?
     /// Current version number
     var currentVersion: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case messages
+        case totalMessages = "total_messages"
+        case appId = "app_id"
+        case currentVersion = "current_version"
+    }
 }
 
 

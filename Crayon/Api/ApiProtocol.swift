@@ -15,11 +15,11 @@ protocol ApiProtocol {
 
 extension ApiProtocol {
     static var baseURL: String {
-        return "http://localhost:8000/api"
+        return "http://localhost:8000/api/apps"
     }
     
     static var token:String {
-        return ""
+        return "your-auth-token-here"
     }
     
 }
