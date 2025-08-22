@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0EF6CDDD2E5895A6008DDA37 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 0EF6CDDC2E5895A6008DDA37 /* AlertToast */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		0E524ED42E3F9DA300550913 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0EF6CDDD2E5895A6008DDA37 /* AlertToast in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = Crayon;
 			packageProductDependencies = (
+				0EF6CDDC2E5895A6008DDA37 /* AlertToast */,
 			);
 			productName = Crayon;
 			productReference = 0E524EC42E3F9DA100550913 /* Crayon.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = 0E524EBB2E3F9DA100550913;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0EF6CDDB2E5895A6008DDA37 /* XCRemoteSwiftPackageReference "AlertToast" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0E524EC52E3F9DA100550913 /* Products */;
 			projectDirPath = "";
@@ -558,6 +567,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0EF6CDDB2E5895A6008DDA37 /* XCRemoteSwiftPackageReference "AlertToast" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/elai950/AlertToast.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.9;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0EF6CDDC2E5895A6008DDA37 /* AlertToast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0EF6CDDB2E5895A6008DDA37 /* XCRemoteSwiftPackageReference "AlertToast" */;
+			productName = AlertToast;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0E524EBC2E3F9DA100550913 /* Project object */;
 }

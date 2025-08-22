@@ -8,6 +8,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var authManager = AuthenticationManager()
+    @EnvironmentObject private var toastManager: ToastManager
     @State private var selectedTab: TabItem = .home
     @State private var showInputDialog = false
     @State private var showRenderDialog = false
@@ -24,7 +25,12 @@ struct ContentView: View {
                 )
         
                 PrimaryActionBtn {
+                    if (!authManager.isLoggedIn ){
+                        toastManager.show(title: "Login", type:.systemImage("xmark.circle.fill", Color.red), subTitle: "Please Login first")
+                        return;
+                    }
                     showInputDialog.toggle()
+                    
                 }
             }
             .padding(.horizontal)

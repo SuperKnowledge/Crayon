@@ -15,6 +15,7 @@ struct CrayonApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .rootToast()
         }
      
     }
