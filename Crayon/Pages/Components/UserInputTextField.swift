@@ -8,20 +8,6 @@
 
 import SwiftUI
 
-// Wrapper class to make ValidationStepsView observable
-class ValidationStepsViewWrapper: ObservableObject {
-    var validationStepsView: ValidationStepsView?
-    
-    func createView(onCompleted: @escaping () -> Void) -> ValidationStepsView {
-        let view = ValidationStepsView(onAllStepsCompleted: onCompleted)
-        self.validationStepsView = view
-        return view
-    }
-    
-    func startValidation(with code: String) {
-        validationStepsView?.startValidation(with: code)
-    }
-}
 
 struct UserInputTextField: View {
     @State private var text: String = ""
@@ -30,8 +16,9 @@ struct UserInputTextField: View {
     @State private var responseMessage: String = ""
     @State private var isError: Bool = false
     @State private var showValidationSteps: Bool = false
+    @State private var componentCodeToValidate: String? = nil
+    
     @State private var currentChatResponse: ChatResponse?
-    @StateObject private var validationStepsView = ValidationStepsViewWrapper()
     
     @Binding var isMinimized: Bool
     let onSuccessResponse: (ChatResponse) -> Void
@@ -45,14 +32,20 @@ struct UserInputTextField: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            if showValidationSteps && !isMinimized {
-                // 验证步骤视图
-                validationStepsView.createView {
-                    // 当所有验证步骤完成后的回调
-                    handleValidationCompleted()
-                }
-                .transition(.move(edge: .top).combined(with: .opacity))
-            }
+            if showValidationSteps, let code = componentCodeToValidate {
+                            ValidationStepsView(
+                                componentCode: code,
+                                onAllStepsCompleted: {
+                                    // When the view reports completion, update our state
+                                    handleValidationCompleted()
+                                },
+                                onValidationFailed: {
+                               
+                                    handleValidationFailed()
+                                }
+                            )
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                        }
             
             if hasResponse && !isMinimized && !showValidationSteps {
                 // 响应结果视图
@@ -224,54 +217,44 @@ struct UserInputTextField: View {
         // 从 nodeStateTree 提取组件代码进行验证
         let componentCode = convertNodeStateTreeToComponentCode(nodeStateTree)
         
-        // 延迟启动验证，让 UI 先显示
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            startValidation(with: componentCode)
-        }
+        self.componentCodeToValidate = componentCode
+        self.showValidationSteps = true
     }
     
-    // 开始验证
-    private func startValidation(with componentCode: String) {
-        // 显示验证步骤
-        withAnimation(.easeInOut(duration: 0.3)) {
-            showValidationSteps = true
-        }
-        
-        // 开始验证过程
-        validationStepsView.startValidation(with: componentCode)
-    }
-    
+
     // 验证完成后的处理
     private func handleValidationCompleted() {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            showValidationSteps = false
-        }
-        
-        // 延迟一点后调用成功回调
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            if let response = currentChatResponse {
-                onSuccessResponse(response)
-            }
-        }
-    }
+           withAnimation(.easeInOut(duration: 0.3)) {
+               showValidationSteps = false
+               componentCodeToValidate = nil // Clean up state
+           }
+           
+           DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+               if let response = currentChatResponse {
+                   onSuccessResponse(response)
+               }
+           }
+       }
     
     // 验证失败后的处理
     private func handleValidationFailed() {
         withAnimation(.easeInOut(duration: 0.3)) {
             showValidationSteps = false
+            componentCodeToValidate = nil // Clean up state
             isError = true
-            responseMessage = "Component validation failed. Please check your component structure and try again."
+            responseMessage = "Component validation failed. Please check the structure and try again."
             hasResponse = true
         }
     }
     
     // 将 nodeStateTree 转换为组件代码字符串
     private func convertNodeStateTreeToComponentCode(_ nodeStateTree: [String: AnyCodable]) -> String {
-        // 这里简化处理，实际可能需要更复杂的转换逻辑
+        Log.info("convertNodeStateTreeToComponentCode,\(nodeStateTree)")
+        
         do {
             let jsonData = try JSONEncoder().encode(nodeStateTree)
             if let jsonString = String(data: jsonData, encoding: .utf8) {
-                return "<Component>\(jsonString)</Component>"
+                return jsonString
             }
         } catch {
             Log.warning("Failed to convert nodeStateTree to component code: \(error)")
@@ -281,15 +264,16 @@ struct UserInputTextField: View {
     
     // 清除响应
     private func clearResponse() {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            hasResponse = false
-            isError = false
-            responseMessage = ""
-            showValidationSteps = false
-            currentChatResponse = nil
-            isTextFieldFocused = true
-        }
-    }
+          withAnimation(.easeInOut(duration: 0.3)) {
+              hasResponse = false
+              isError = false
+              responseMessage = ""
+              showValidationSteps = false
+              currentChatResponse = nil
+              componentCodeToValidate = nil // Also clear the validation code
+              isTextFieldFocused = true
+          }
+      }
 }
 
 struct UserInputTextField_PreviewContainer: View {

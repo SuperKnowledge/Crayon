@@ -57,6 +57,8 @@ struct ValidApi {
     
     // MARK: - Mock Implementation
     private static func mockValidateComponent(code: String) async throws -> [String: Bool] {
+        Log.info("mockValidateComponent code:\(code)")
+        
         // 模拟网络延迟
         try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
         
